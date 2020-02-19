@@ -1,4 +1,4 @@
-[bits 32】
+[bits 32]
 %define ERROR_CODE nop
 %define ZERO push 0
 

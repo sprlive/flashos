@@ -5,9 +5,12 @@ loader.bin: loader.asm
 	nasm -I include/ -o out/loader.bin loader.asm -l out/loader.lst
 	
 kernel.bin: kernel/main.c
+	gcc -I lib/kernel/ -I lib/ -I kernel/ -c -fno-builtin -o out/main.o kernel/main.c
 	nasm -f elf -o out/print.o lib/kernel/print.asm
-	gcc -I lib/kernel/ -c -o out/main.o kernel/main.c
-	ld -Ttext 0xc0001500 -e main -o out/kernel.bin out/main.o out/print.o
+	nasm -f elf -o out/kernel.o kernel/kernel.asm
+	gcc -I lib/kernel/ -I lib/ -I kernel/ -c -fno-builtin -o out/interrupt.o kernel/interrupt.c
+	gcc -I lib/kernel/ -I lib/ -I kernel/ -c -fno-builtin -o out/init.o kernel/init.c
+	ld -Ttext 0xc0001500 -e main -o out/kernel.bin out/main.o out/init.o out/interrupt.o out/print.o out/kernel.o
 	
 os.raw: mbr.bin loader.bin kernel.bin
 	../bochs/bin/bximage -hd -mode="flat" -size=60 -q target/os.raw

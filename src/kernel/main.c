@@ -1,6 +1,8 @@
 #include "print.h"
-int main(void){
-	put_str("put_str finish\n");
+#include "init.h"
+void main(void){
+	put_str("I am kernel\n");
+	init_all();
+	asm volatile("sti");
 	while(1);
-	return 0;
 }
