@@ -6,8 +6,8 @@ loader.bin: loader.asm
 	
 kernel.bin: kernel/main.c
 	gcc -I lib/kernel/ -I lib/ -I kernel/ -c -fno-builtin -o out/main.o kernel/main.c
-	nasm -f elf -o out/print.o lib/kernel/print.asm
-	nasm -f elf -o out/kernel.o kernel/kernel.asm
+	nasm -f elf -o out/print.o lib/kernel/print.asm -l out/print.lst
+	nasm -f elf -o out/kernel.o kernel/kernel.asm -l out/kernel.lst
 	gcc -I lib/kernel/ -I lib/ -I kernel/ -c -fno-builtin -o out/interrupt.o kernel/interrupt.c
 	gcc -I lib/kernel/ -I lib/ -I kernel/ -c -fno-builtin -o out/init.o kernel/init.c
 	ld -Ttext 0xc0001500 -e main -o out/kernel.bin out/main.o out/init.o out/interrupt.o out/print.o out/kernel.o

@@ -24,7 +24,7 @@ intr_entry_table:
 		out 0x20,al
 		
 		push %1
-		call [idt_table + %1*4]
+		call [idt_tables + %1*4]
 		jmp intr_exit
 		
 	section .data
