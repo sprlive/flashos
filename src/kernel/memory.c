@@ -73,6 +73,20 @@ static void page_table_add(void* _vaddr, void* _page_phyaddr) {
 	uint32_t* pde = pde_ptr(vaddr);
 	uint32_t* pte = pte_ptr(vaddr);
 	
+	put_str("vaddr = ");
+	put_int(vaddr);
+	put_str("\n");
+	put_str("page_phyaddr = ");
+	put_int(page_phyaddr);
+	put_str("\n");
+	
+	put_str("*pde = ");
+	put_int((int32_t)pde);
+	put_str("\n");
+	put_str("*pte = ");
+	put_int((uint32_t)pte);
+	put_str("\n");
+	
 	// 判断页目录项的p位，为1表示该表已存在
 	if (*pde & 0x00000001) {
 		if(!(*pte & 0x00000001)) {
@@ -80,12 +94,27 @@ static void page_table_add(void* _vaddr, void* _page_phyaddr) {
 		} else {
 			// pte repeat
 		}
+		uint32_t pte_value = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+		put_str("pde exist\n");
+		put_str("pte_value = ");
+		put_int(pte_value);
+		put_str("\n");
 	} else {
 		// 页目录项不存在，先创建页目录项，再创建页表项
 		uint32_t pde_phyaddr = (uint32_t)palloc(&kernel_pool);
 		*pde = (pde_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
 		memset((void*)((int)pte & 0xfffff000), 0, PG_SIZE);
 		*pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+		
+		uint32_t pde_value = (pde_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+		uint32_t pte_value = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+		put_str("pde not exist\n");
+		put_str("pde_value = ");
+		put_int(pde_value);
+		put_str("\n");
+		put_str("pte_value = ");
+		put_int(pte_value);
+		put_str("\n");
 	}
 }
 
