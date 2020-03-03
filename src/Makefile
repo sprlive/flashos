@@ -1,3 +1,6 @@
+LIB = -I lib/kernel/ -I lib/ -I kernel/ -I thread/
+GCCPARAM = -c -fno-builtin
+
 mbr.bin: mbr.asm
 	nasm -I include/ -o out/mbr.bin mbr.asm -l out/mbr.lst
 	
@@ -5,16 +8,30 @@ loader.bin: loader.asm
 	nasm -I include/ -o out/loader.bin loader.asm -l out/loader.lst
 	
 kernel.bin: kernel/main.c
-	gcc -I lib/kernel/ -I lib/ -I kernel/ -I thread/ -c -fno-builtin -o out/main.o kernel/main.c
 	nasm -f elf -o out/print.o lib/kernel/print.asm -l out/print.lst
 	nasm -f elf -o out/kernel.o kernel/kernel.asm -l out/kernel.lst
-	gcc -I lib/kernel/ -I lib/ -I kernel/ -c -fno-builtin -o out/string.o lib/string.c
-	gcc -I lib/kernel/ -I lib/ -I kernel/ -c -fno-builtin -o out/interrupt.o kernel/interrupt.c
-	gcc -I lib/kernel/ -I lib/ -I kernel/ -c -fno-builtin -o out/init.o kernel/init.c
-	gcc -I lib/kernel/ -I lib/ -I kernel/ -c -fno-builtin -o out/bitmap.o kernel/bitmap.c
-	gcc -I lib/kernel/ -I lib/ -I kernel/ -c -fno-builtin -o out/memory.o kernel/memory.c
-	gcc -I lib/kernel/ -I lib/ -I kernel/ -I thread/ -c -fno-builtin -o out/thread.o thread/thread.c
-	ld -Ttext 0xc0001500 -e main -o out/kernel.bin out/main.o out/init.o out/interrupt.o out/print.o out/kernel.o out/memory.o out/bitmap.o out/string.o out/thread.o
+	gcc $(LIB) $(GCCPARAM) -o out/main.o	kernel/main.c
+	gcc $(LIB) $(GCCPARAM) -o out/string.o	lib/string.c
+	gcc $(LIB) $(GCCPARAM) -o out/list.o	lib/kernel/list.c
+	gcc $(LIB) $(GCCPARAM) -o out/interrupt.o	kernel/interrupt.c
+	gcc $(LIB) $(GCCPARAM) -o out/init.o	kernel/init.c
+	gcc $(LIB) $(GCCPARAM) -o out/bitmap.o	kernel/bitmap.c
+	gcc $(LIB) $(GCCPARAM) -o out/memory.o	kernel/memory.c
+	gcc $(LIB) $(GCCPARAM) -o out/thread.o	thread/thread.c
+	gcc $(LIB) $(GCCPARAM) -o out/timer.o	device/timer.c
+	ld -Ttext 0xc0001500 -e main -o \
+		out/kernel.bin \
+		out/main.o \
+		out/init.o \
+		out/interrupt.o \
+		out/print.o \
+		out/kernel.o \
+		out/memory.o \
+		out/bitmap.o \
+		out/string.o \
+		out/list.o \
+		out/thread.o \
+		out/timer.o
 	
 os.raw: mbr.bin loader.bin kernel.bin
 	../bochs/bin/bximage -hd -mode="flat" -size=60 -q target/os.raw

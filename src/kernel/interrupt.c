@@ -2,14 +2,17 @@
 #include "stdint.h"
 #include "global.h"
 #include "io.h"
+#include "print.h"
 
+#define PIC_M_CTRL 0x20	       // 这里用的可编程中断控制器是8259A,主片的控制端口是0x20
+#define PIC_M_DATA 0x21	       // 主片的数据端口是0x21
+#define PIC_S_CTRL 0xa0	       // 从片的控制端口是0xa0
+#define PIC_S_DATA 0xa1	       // 从片的数据端口是0xa1
 
-#define PIC_M_CTRL 0x20 //主片控制端口
-#define PIC_M_DATA 0x21 //主片数据端口
-#define PIC_S_CTRL 0xa0 //从片控制端口
-#define PIC_S_DATA 0xa1 //从片数据端口
+#define IDT_DESC_CNT 0x81      // 目前总共支持的中断数
 
-#define IDT_DESC_CNT 0x21	//目前总共支持的中断数
+#define EFLAGS_IF   0x00000200       // eflags寄存器中的if位为1
+#define GET_EFLAGS(EFLAG_VAR) asm volatile("pushfl; popl %0" : "=g" (EFLAG_VAR))
 
 // 中断门描述符结构体
 struct gate_desc{
@@ -75,9 +78,25 @@ static void general_intr_handler(uint8_t vec_nr) {
 	if(vec_nr == 0x27 || vec_nr == 0x2f) {
 		return;
 	}
-	put_str("int vector:0x");
-	put_int(vec_nr);
-	put_char('\n');
+	set_cursor(0);
+	int cursor_pos = 0;
+	while(cursor_pos < 320) {
+		put_char(' ');
+		cursor_pos++;
+	}
+	
+	set_cursor(0);
+	put_str("!!!!!! exception message begin !!!!!!n");
+	set_cursor(88);
+	put_str(intr_name[vec_nr]);
+	if (vec_nr == 14) { // PageFault
+		int page_fault_vaddr = 0;
+		asm ("movl %%cr2, %0" : "=r" (page_fault_vaddr));
+		put_str("\npage fault addr is ");
+		put_int(page_fault_vaddr);
+	}
+	put_str("\n!!!!!!! exception message end !!!!!!\n");
+	while(1);
 }
 
 // 完成一般中断处理函数注册及异常名称注册
@@ -110,6 +129,43 @@ static void exception_init(void) {
 	intr_name[19] = "#XF SIMD Floating-Point Exception";
 }
 
+/* 开中断并返回开中断前的状态*/
+enum intr_status intr_enable() {
+   enum intr_status old_status;
+   if (INTR_ON == intr_get_status()) {
+      old_status = INTR_ON;
+      return old_status;
+   } else {
+      old_status = INTR_OFF;
+      asm volatile("sti");	 // 开中断,sti指令将IF位置1
+      return old_status;
+   }
+}
+
+/* 关中断,并且返回关中断前的状态 */
+enum intr_status intr_disable() {     
+   enum intr_status old_status;
+   if (INTR_ON == intr_get_status()) {
+      old_status = INTR_ON;
+      asm volatile("cli" : : : "memory"); // 关中断,cli指令将IF位置0
+      return old_status;
+   } else {
+      old_status = INTR_OFF;
+      return old_status;
+   }
+}
+
+/* 将中断状态设置为status */
+enum intr_status intr_set_status(enum intr_status status) {
+   return status & INTR_ON ? intr_enable() : intr_disable();
+}
+
+/* 获取当前中断状态 */
+enum intr_status intr_get_status() {
+   uint32_t eflags = 0; 
+   GET_EFLAGS(eflags);
+   return (EFLAGS_IF & eflags) ? INTR_ON : INTR_OFF;
+}
 
 // 完成有关中断到所有初始化工作
 void idt_init() {
@@ -122,5 +178,10 @@ void idt_init() {
 	uint64_t idt_operand = ((sizeof(idt) - 1) | ((uint64_t)((uint32_t)idt << 16)));
 	asm volatile("lidt %0" : : "m" (idt_operand));
 	put_str("idt_init done\n");
+}
+
+// 注册中断处理函数
+void register_handler(uint8_t vector_no, intr_handler function) {
+	idt_table[vector_no] = function;
 }
 
