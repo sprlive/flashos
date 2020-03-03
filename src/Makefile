@@ -10,6 +10,7 @@ loader.bin: loader.asm
 kernel.bin: kernel/main.c
 	nasm -f elf -o out/print.o lib/kernel/print.asm -l out/print.lst
 	nasm -f elf -o out/kernel.o kernel/kernel.asm -l out/kernel.lst
+	nasm -f elf -o out/switch.o thread/switch.asm -l out/switch.lst
 	gcc $(LIB) $(GCCPARAM) -o out/main.o	kernel/main.c
 	gcc $(LIB) $(GCCPARAM) -o out/string.o	lib/string.c
 	gcc $(LIB) $(GCCPARAM) -o out/list.o	lib/kernel/list.c
@@ -26,6 +27,7 @@ kernel.bin: kernel/main.c
 		out/interrupt.o \
 		out/print.o \
 		out/kernel.o \
+		out/switch.o \
 		out/memory.o \
 		out/bitmap.o \
 		out/string.o \

@@ -31,7 +31,7 @@ uint32_t ticks; // ticks是内核自中断开启以来总共的嘀嗒数
  	ticks++;
  	
  	if (cur_thread->ticks == 0) {
- 		//schedule();
+ 		schedule();
  	} else {
  		cur_thread->ticks--;
  	}
