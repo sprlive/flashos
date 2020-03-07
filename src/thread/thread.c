@@ -4,6 +4,7 @@
 #include "global.h"
 #include "memory.h"
 #include "list.h"
+#include "interrupt.h"
 
 #define PG_SIZE 4096
 
@@ -111,6 +112,37 @@ void thread_init(void) {
 	make_main_thread();
 	put_str("thread_init done\n");
 }
+
+
+
+// 当前线程将自己阻塞，标志其状态为 stat(取值必须为 BLOCKED WAITING HANGING 之一)
+void thread_block(enum task_status stat) {
+	enum intr_status old_status = intr_disable();
+	struct task_struct* cur_thread = running_thread();
+	cur_thread->status = stat;
+	schedule();
+	intr_set_status(old_status);
+}
+
+// 解除阻塞
+void thread_unblock(struct task_struct* pthread) {
+	enum intr_status old_status = intr_disable();
+	if (pthread->status != TASK_READY) {
+		if (elem_find(&thread_ready_list, &pthread->general_tag)) {
+			// 错误！blocked thread in ready_list
+		}
+		// 放到队列的最前面，使其尽快得到调度
+		list_push(&thread_ready_list, &pthread->general_tag);
+		pthread->status = TASK_READY;
+	}
+	intr_set_status(old_status);
+}
+
+
+
+
+
+
 
 
 
