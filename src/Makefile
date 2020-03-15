@@ -22,6 +22,7 @@ kernel.bin: kernel/main.c
 	gcc $(LIB) $(GCCPARAM) -o out/sync.o	thread/sync.c
 	gcc $(LIB) $(GCCPARAM) -o out/timer.o	device/timer.c
 	gcc $(LIB) $(GCCPARAM) -o out/console.o	device/console.c
+	gcc $(LIB) $(GCCPARAM) -o out/keyboard.o	device/keyboard.c
 	ld -Ttext 0xc0001500 -e main -o \
 		out/kernel.bin \
 		out/main.o \
@@ -37,7 +38,8 @@ kernel.bin: kernel/main.c
 		out/thread.o \
 		out/timer.o \
 		out/sync.o \
-		out/console.o
+		out/console.o \
+		out/keyboard.o
 	
 os.raw: mbr.bin loader.bin kernel.bin
 	../bochs/bin/bximage -hd -mode="flat" -size=60 -q target/os.raw
