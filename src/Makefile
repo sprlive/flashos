@@ -1,4 +1,4 @@
-LIB = -I lib/kernel/ -I lib/ -I kernel/ -I thread/
+LIB = -I lib/kernel/ -I lib/ -I kernel/ -I thread/ -I device/
 GCCPARAM = -c -fno-builtin
 
 mbr.bin: mbr.asm
@@ -18,11 +18,13 @@ kernel.bin: kernel/main.c
 	gcc $(LIB) $(GCCPARAM) -o out/init.o	kernel/init.c
 	gcc $(LIB) $(GCCPARAM) -o out/bitmap.o	kernel/bitmap.c
 	gcc $(LIB) $(GCCPARAM) -o out/memory.o	kernel/memory.c
+	gcc $(LIB) $(GCCPARAM) -o out/debug.o	kernel/debug.c
 	gcc $(LIB) $(GCCPARAM) -o out/thread.o	thread/thread.c
 	gcc $(LIB) $(GCCPARAM) -o out/sync.o	thread/sync.c
 	gcc $(LIB) $(GCCPARAM) -o out/timer.o	device/timer.c
 	gcc $(LIB) $(GCCPARAM) -o out/console.o	device/console.c
 	gcc $(LIB) $(GCCPARAM) -o out/keyboard.o	device/keyboard.c
+	gcc $(LIB) $(GCCPARAM) -o out/ioqueue.o	device/ioqueue.c
 	ld -Ttext 0xc0001500 -e main -o \
 		out/kernel.bin \
 		out/main.o \
@@ -32,6 +34,7 @@ kernel.bin: kernel/main.c
 		out/kernel.o \
 		out/switch.o \
 		out/memory.o \
+		out/debug.o \
 		out/bitmap.o \
 		out/string.o \
 		out/list.o \
@@ -39,6 +42,7 @@ kernel.bin: kernel/main.c
 		out/timer.o \
 		out/sync.o \
 		out/console.o \
+		out/ioqueue.o \
 		out/keyboard.o
 	
 os.raw: mbr.bin loader.bin kernel.bin

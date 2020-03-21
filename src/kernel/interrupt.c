@@ -50,7 +50,7 @@ static void pic_init(void) {
 	
 	/*打开主片上IR0,也就是目前只接受时钟产生的中断 */
 	// 测试键盘中断 0xfd
-	outb (PIC_M_DATA, 0xfd);
+	outb (PIC_M_DATA, 0xfc);
 	outb (PIC_S_DATA, 0xff);
 	
 	put_str("   pic_init done\n");
