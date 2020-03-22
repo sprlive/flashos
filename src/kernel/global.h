@@ -5,6 +5,8 @@
 
 // ----------------  GDT描述符属性  ----------------
 
+#define GDT_BASE_ADDR 0xc0000903
+
 #define	DESC_G_4K    1
 #define	DESC_D_32    1
 #define DESC_L	     0	// 64位代码标记，此处标记为0便可。

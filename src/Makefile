@@ -25,6 +25,7 @@ kernel.bin: kernel/main.c
 	gcc $(LIB) $(GCCPARAM) -o out/console.o	device/console.c
 	gcc $(LIB) $(GCCPARAM) -o out/keyboard.o	device/keyboard.c
 	gcc $(LIB) $(GCCPARAM) -o out/ioqueue.o	device/ioqueue.c
+	gcc $(LIB) $(GCCPARAM) -o out/tss.o	userprog/tss.c
 	ld -Ttext 0xc0001500 -e main -o \
 		out/kernel.bin \
 		out/main.o \
@@ -43,6 +44,7 @@ kernel.bin: kernel/main.c
 		out/sync.o \
 		out/console.o \
 		out/ioqueue.o \
+		out/tss.o \
 		out/keyboard.o
 	
 os.raw: mbr.bin loader.bin kernel.bin

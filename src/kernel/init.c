@@ -4,6 +4,7 @@
 #include "memory.h"
 #include "../device/timer.h"
 #include "../device/console.h"
+#include "../userprog/tss.h"
 
 // 负责初始化所有模块
 void init_all() {
@@ -14,4 +15,5 @@ void init_all() {
 	thread_init(); // 初始化线程相关结构
 	console_init(); // 控制台初始化
 	keyboard_init(); // 键盘初始化
+	tss_init(); // tss初始化
 }
