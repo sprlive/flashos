@@ -33,7 +33,8 @@ struct tss {
     uint32_t ldt;
     uint32_t trace;
     uint32_t io_base;
-}; 
+};
+
 static struct tss tss;
 
 /* 更新tss中esp0字段的值为pthread的0级线 */

@@ -1,4 +1,4 @@
-LIB = -I lib/kernel/ -I lib/ -I kernel/ -I thread/ -I device/
+LIB = -I lib/kernel/ -I lib/ -I kernel/ -I thread/ -I device/ -I userprog/
 GCCPARAM = -c -fno-builtin
 
 mbr.bin: mbr.asm
@@ -26,6 +26,7 @@ kernel.bin: kernel/main.c
 	gcc $(LIB) $(GCCPARAM) -o out/keyboard.o	device/keyboard.c
 	gcc $(LIB) $(GCCPARAM) -o out/ioqueue.o	device/ioqueue.c
 	gcc $(LIB) $(GCCPARAM) -o out/tss.o	userprog/tss.c
+	gcc $(LIB) $(GCCPARAM) -o out/process.o	userprog/process.c
 	ld -Ttext 0xc0001500 -e main -o \
 		out/kernel.bin \
 		out/main.o \
@@ -45,6 +46,7 @@ kernel.bin: kernel/main.c
 		out/console.o \
 		out/ioqueue.o \
 		out/tss.o \
+		out/process.o \
 		out/keyboard.o
 	
 os.raw: mbr.bin loader.bin kernel.bin

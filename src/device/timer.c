@@ -29,7 +29,6 @@ uint32_t ticks; // ticks是内核自中断开启以来总共的嘀嗒数
  	struct task_struct* cur_thread = running_thread();
  	cur_thread->elapsed_ticks++;
  	ticks++;
- 	
  	if (cur_thread->ticks == 0) {
  		schedule();
  	} else {

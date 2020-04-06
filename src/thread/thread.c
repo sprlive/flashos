@@ -5,6 +5,7 @@
 #include "memory.h"
 #include "list.h"
 #include "interrupt.h"
+#include "process.h"
 
 #define PG_SIZE 4096
 
@@ -63,9 +64,8 @@ void init_thread(struct task_struct* pthread, char* name, int prio) {
 
 // 创建一优先级为 prio 的线程，线程名为 name，线程所执行的函数为 function_start
 struct task_struct* thread_start(char* name, int prio, thread_func function, void* func_arg) {
-	put_str("one thread start:");
+	put_str("\none thread start:");
 	put_str(name);
-	put_str("\n");
 	// pcb 都位于内核空间，包括用户进程的 pcb 也是在内核空间
 	struct task_struct* thread = get_kernel_pages(1);
 	
@@ -82,7 +82,7 @@ static void make_main_thread(void) {
 	main_thread = running_thread();
 	init_thread(main_thread, "main", 31);
 	list_append(&thread_all_list, &main_thread->all_list_tag);
-}
+}	
 
 // 实现任务调度
 void schedule() {
@@ -101,6 +101,16 @@ void schedule() {
 	thread_tag = list_pop(&thread_ready_list);
 	struct task_struct* next = elem2entry(struct task_struct, general_tag, thread_tag);
 	next->status = TASK_RUNNING;
+	
+	// 激活任务页表等
+	process_activate(next);
+	
+	console_put_str("\nSWITCH_TO");
+	console_put_str("\ncur:");
+	console_put_str(cur->name);
+	console_put_str("\nnext:");
+	console_put_str(next->name);
+	console_put_str("\n");
 	switch_to(cur, next);
 }
 
