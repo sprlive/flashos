@@ -1,5 +1,7 @@
-LIB = -I lib/kernel/ -I lib/ -I kernel/ -I thread/ -I device/
+LIB = -I lib/kernel/ -I lib/ -I kernel/ -I thread/ -I device/ -I userprog/
 GCCPARAM = -c -fno-builtin
+TARGET = ../bochs/hd60M.img
+OSTARGET = target/os.raw
 
 mbr.bin: mbr.asm
 	nasm -I include/ -o out/mbr.bin mbr.asm -l out/mbr.lst
@@ -26,6 +28,7 @@ kernel.bin: kernel/main.c
 	gcc $(LIB) $(GCCPARAM) -o out/keyboard.o	device/keyboard.c
 	gcc $(LIB) $(GCCPARAM) -o out/ioqueue.o	device/ioqueue.c
 	gcc $(LIB) $(GCCPARAM) -o out/tss.o	userprog/tss.c
+	gcc $(LIB) $(GCCPARAM) -o out/process.o	userprog/process.c
 	ld -Ttext 0xc0001500 -e main -o \
 		out/kernel.bin \
 		out/main.o \
@@ -45,13 +48,14 @@ kernel.bin: kernel/main.c
 		out/console.o \
 		out/ioqueue.o \
 		out/tss.o \
+		out/process.o \
 		out/keyboard.o
 	
 os.raw: mbr.bin loader.bin kernel.bin
 	../bochs/bin/bximage -hd -mode="flat" -size=60 -q target/os.raw
-	dd if=out/mbr.bin of=target/os.raw bs=512 count=1
-	dd if=out/loader.bin of=target/os.raw bs=512 count=4 seek=2
-	dd if=out/kernel.bin of=target/os.raw bs=512 count=200 seek=9
+	dd if=out/mbr.bin of=${OSTARGET} bs=512 count=1 conv=notrunc
+	dd if=out/loader.bin of=${OSTARGET} bs=512 count=4 seek=2 conv=notrunc
+	dd if=out/kernel.bin of=${OSTARGET} bs=512 count=200 seek=9 conv=notrunc
 	
 run:
 	make install

@@ -5,16 +5,24 @@
 
 #include "ioqueue.h"
 #include "keyboard.h"
+#include "process.h"
 
 void k_thread_a(void*);
 void k_thread_b(void*);
+void u_prog_a(void);
+void u_prog_b(void);
+int test_var_a = 0, test_var_b = 0;
 
 int main(void){
 	put_str("I am kernel\n");
 	init_all();
 	
-	thread_start("consumer_a", 31, k_thread_a, "AOUT_");
-	thread_start("consumer_b", 31, k_thread_b, "BOUT_");
+	thread_start("threadA", 31, k_thread_a, "AOUT_");
+	thread_start("threadB", 31, k_thread_b, "BOUT_");
+	//thread_start("userProcessA", 31, u_prog_a, "AOUT_");
+	//thread_start("userProcessB", 31, u_prog_b, "BOUT_");
+	process_execute(u_prog_a, "userProcessA");
+	process_execute(u_prog_b, "userProcessB");
 	
 	intr_enable();
 	
@@ -25,27 +33,32 @@ int main(void){
 }
 
 void k_thread_a(void* arg) {
+	char* para = arg;
 	while(1) {
-		enum intr_status old_status = intr_disable();
-		if (!ioq_empty(&kbd_buf)) {
-			console_put_str(arg);
-			char byte = ioq_getchar(&kbd_buf);
-			console_put_char(byte);
-			console_put_str("\n");
-		}
-		intr_set_status(old_status);
+		console_put_str("threadA:");
+		console_put_int(test_var_a);
+		console_put_str("\n");
 	}
 }
 
 void k_thread_b(void* arg) {
+	char* para = arg;
 	while(1) {
-		enum intr_status old_status = intr_disable();
-		if (!ioq_empty(&kbd_buf)) {
-			console_put_str(arg);
-			char byte = ioq_getchar(&kbd_buf);
-			console_put_char(byte);
-			console_put_str("\n");
-		}
-		intr_set_status(old_status);
+		console_put_str("threadB:");
+		console_put_int(test_var_b);
+		console_put_str("\n");
 	}
 }
+
+void u_prog_a(void) {
+	while(1) {
+		test_var_a++;
+	}
+}
+
+void u_prog_b(void) {
+	while(1) {
+		test_var_b++;
+	}
+}
+
