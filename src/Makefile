@@ -86,8 +86,8 @@ install:
 	make -r os.raw
 	
 clean:
-	rm -rf target/*
-	rm -rf out/*
-	rm -rf os.raw
-	rm -rf os.raw.lock
-	rm -rf bochs.out
+	del /q target
+	del /q out
+	del os.raw
+	del os.raw.lock
+	del bochs.out
